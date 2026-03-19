@@ -11,8 +11,11 @@ export UPINFO="gh-releases-zsync|${GITHUB_REPOSITORY%/*}|${GITHUB_REPOSITORY#*/}
 export ICON=PATH_OR_URL_TO_ICON
 export DESKTOP=PATH_OR_URL_TO_DESKTOP_ENTRY
 
+export DEPLOY_GTK=1
+export DEPLOY_GDK=1
+
 # Deploy dependencies
-quick-sharun /PATH/TO/BINARY_AND_LIBRARIES_HERE
+quick-sharun /usr/bin/nemo
 
 # Additional changes can be done in between here
 
