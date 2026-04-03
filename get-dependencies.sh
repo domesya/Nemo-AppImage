@@ -6,7 +6,7 @@ ARCH=$(uname -m)
 
 echo "Installing package dependencies..."
 echo "---------------------------------------------------------------"
-pacman -Syu --noconfirm nemo
+pacman -Syu --noconfirm nemo nemo-fileroller nemo-share nemo-terminal nemo-repairer nemo-compare nemo-audio-tab nemo-image-converter nemo-python
 
 echo "Installing debloated packages..."
 echo "---------------------------------------------------------------"
