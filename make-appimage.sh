@@ -21,8 +21,7 @@ ln -sf /usr/lib/bulky/bulky.py /usr/bin/bulky
 sed -i -e 's|LOCALE_DIR =.*|LOCALE_DIR = os.environ.get("TEXTDOMAINDIR", "/usr/share/locale")|' /usr/lib/bulky/bulky.py
 
 # Deploy dependencies
-quick-sharun /usr/bin/nemo \
-  /usr/bin/bulky /usr/lib/libgtk-3.so*
+quick-sharun /usr/bin/nemo /usr/bin/bulky /usr/lib/libgtk-3.so*
 
 # Additional changes can be done in between here
 
