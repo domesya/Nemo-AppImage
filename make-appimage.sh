@@ -22,6 +22,13 @@ ln -sf /usr/lib/bulky/bulky.py /usr/bin/bulky
 # allow relocating locales
 sed -i -e 's|LOCALE_DIR =.*|LOCALE_DIR = os.environ.get("TEXTDOMAINDIR", "/usr/share/locale")|' /usr/lib/bulky/bulky.py
 
+# Set nemo bulk rename tool to bulky (modify system schemas before quick-sharun deploys them)
+cat > /usr/share/glib-2.0/schemas/99_nemo-bulky.gschema.override << 'OVERRIDE'
+[org.nemo.preferences]
+bulk-rename-tool=b'bulky'
+OVERRIDE
+glib-compile-schemas /usr/share/glib-2.0/schemas/
+
 # Deploy dependencies
 quick-sharun \
   /usr/bin/nemo  \
@@ -32,15 +39,6 @@ quick-sharun \
   /usr/lib/libcinnamon-desktop.so*  \
   /usr/bin/file-roller \
   /usr/share/glib-2.0/schemas/
-
-# Set nemo bulk rename tool to bulky
-APPDIR="${APPDIR:-./AppDir}"
-NEMO_SCHEMAS="$APPDIR/shared/share/glib-2.0/schemas"
-cat > "$NEMO_SCHEMAS/99_nemo-bulky.gschema.override" << 'OVERRIDE'
-[org.nemo.preferences]
-bulk-rename-tool=b'bulky'
-OVERRIDE
-glib-compile-schemas "$NEMO_SCHEMAS"
 
 # Turn AppDir into AppImage
 quick-sharun --make-appimage
