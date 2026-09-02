@@ -31,8 +31,16 @@ quick-sharun \
   /usr/share/nemo-python/extensions/  \
   /usr/lib/libcinnamon-desktop.so*  \
   /usr/bin/file-roller
-  
-# Additional changes can be done in between here
+
+# Set nemo bulk rename tool to bulky
+NEMO_SCHEMAS="$APPDIR/shared/share/glib-2.0/schemas"
+if [ -d "$NEMO_SCHEMAS" ]; then
+  cat > "$NEMO_SCHEMAS/99_nemo-bulky.gschema.override" << 'OVERRIDE'
+[org.nemo.preferences]
+bulk-rename-tool=b'bulky'
+OVERRIDE
+  glib-compile-schemas "$NEMO_SCHEMAS"
+fi
 
 # Turn AppDir into AppImage
 quick-sharun --make-appimage
