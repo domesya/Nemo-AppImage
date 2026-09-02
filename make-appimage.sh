@@ -33,6 +33,7 @@ quick-sharun \
   /usr/bin/file-roller
 
 # Set nemo bulk rename tool to bulky
+APPDIR="${APPDIR:-./AppDir}"
 NEMO_SCHEMAS="$APPDIR/shared/share/glib-2.0/schemas"
 if [ -d "$NEMO_SCHEMAS" ]; then
   cat > "$NEMO_SCHEMAS/99_nemo-bulky.gschema.override" << 'OVERRIDE'
