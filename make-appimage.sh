@@ -28,7 +28,9 @@ quick-sharun \
   /usr/bin/bulky \
   /usr/lib/libgtk-3.so* \
   /usr/lib/nemo/extensions-3.0/  \
-  /usr/share/nemo-python/extensions/
+  /usr/share/nemo-python/extensions/  \
+  /usr/lib/libcinnamon-desktop.so*  \
+  /usr/bin/file-roller
   
 # Additional changes can be done in between here
 
