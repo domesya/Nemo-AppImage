@@ -13,7 +13,6 @@ export DESKTOP=/usr/share/applications/nemo.desktop
 export DEPLOY_PYTHON=1
 export PATH_MAPPING='
   /usr/share/bulky:${SHARUN_DIR}/share/bulky
-  /usr/bin/bulky:${SHARUN_DIR}/bin/bulky
 '
 
 # /usr/bin/bulky is a bash script that just executes bulky
