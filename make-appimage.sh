@@ -11,7 +11,10 @@ export UPINFO="gh-releases-zsync|${GITHUB_REPOSITORY%/*}|${GITHUB_REPOSITORY#*/}
 export ICON=/usr/share/icons/hicolor/16x16/apps/nemo.png
 export DESKTOP=/usr/share/applications/nemo.desktop
 export DEPLOY_PYTHON=1
-export PATH_MAPPING='/usr/share/bulky:${SHARUN_DIR}/share/bulky'
+export PATH_MAPPING='
+  /usr/share/bulky:${SHARUN_DIR}/share/bulky
+  /usr/bin/bulky:${SHARUN_DIR}/bin/bulky
+'
 
 # /usr/bin/bulky is a bash script that just executes bulky
 # there is no point in that, just symlink the python script directly lol
