@@ -40,6 +40,10 @@ quick-sharun \
   /usr/bin/file-roller \
   /usr/share/glib-2.0/schemas/
 
+# Add host system paths to PATH so Nemo can find terminal emulators
+APPDIR=${APPDIR:-./AppDir}
+echo 'PATH=${SHARUN_DIR}/bin:/usr/bin:/usr/local/bin' >> "$APPDIR/.env"
+
 # Turn AppDir into AppImage
 quick-sharun --make-appimage
 
