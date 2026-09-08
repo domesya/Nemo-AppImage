@@ -40,6 +40,9 @@ quick-sharun \
   /usr/bin/file-roller \
   /usr/share/glib-2.0/schemas/
 
+# This extension caused crashes
+rm ./AppDir/shared/lib/nemo/extensions-3.0/libnemo-share.so
+
 
 # Turn AppDir into AppImage
 quick-sharun --make-appimage
