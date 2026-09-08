@@ -8,7 +8,7 @@ export ARCH VERSION
 export OUTPATH=./dist
 export ADD_HOOKS="self-updater.bg.hook"
 export UPINFO="gh-releases-zsync|${GITHUB_REPOSITORY%/*}|${GITHUB_REPOSITORY#*/}|latest|*$ARCH.AppImage.zsync"
-export ICON=/usr/share/icons/hicolor/16x16/apps/nemo.png
+export ICON=/usr/share/icons/hicolor/scalable/apps/nemo.svg
 export DESKTOP=/usr/share/applications/nemo.desktop
 export DEPLOY_PYTHON=1
 export PATH_MAPPING='
