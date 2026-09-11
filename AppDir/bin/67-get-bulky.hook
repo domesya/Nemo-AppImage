@@ -10,16 +10,13 @@ _get_bulky() {
 	notify -ni "Downloading bulky..."
 	>&2 echo "Downloading bulky from: $_link"
 	mkdir -p "${BULKY_PATH%/*}"
-	download "$BULKY_PATH".tmp "$_link" || return 1
+	download "$BULKY_PATH".tmp "$_link" || err_msg "Downloading bulky failed"
 	[ -s "$BULKY_PATH".tmp ] || return 1
 	mv -f "$BULKY_PATH".tmp "$BULKY_PATH"
 	chmod +x "$BULKY_PATH"
-	
+	notify -ni "Finished downloading bulky."
 }
 
 if [ ! -x "$BULKY_PATH" ]; then
-	if ! _get_bulky; then
-		notify -de "Something went wrong getting bulky from '$_link'"
-		return 1
-	fi
+	( _get_bulky ) &
 fi
