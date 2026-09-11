@@ -1,0 +1,188 @@
+#!/bin/sh
+set -e
+# Hook to detect and configure the terminal emulator for Nemo's "Open in Terminal"
+# On first launch, prompts the user to select their preferred terminal.
+# Saves the choice via gsettings so Nemo reads it natively.
+
+_term_pref_file=${CONFIGDIR:-$HOME/.config}/nemo-terminal-preference
+_dconf_key=/org/cinnamon/desktop/default-applications/terminal
+
+# Schema IDs to try (Cinnamon first, GNOME as fallback)
+_schema_cinnamon="org.cinnamon.desktop.default-applications.terminal"
+_schema_gnome="org.gnome.desktop.default-applications.terminal"
+_schema=""
+
+# Nemo's known terminals list (from eel/eel-gnome-extensions.c)
+_known_terminals="alacritty color-xterm dtterm foot gnome-terminal kgx kitty konsole lxterminal mate-terminal nxterm rxvt sakura st terminator terminology tilix wezterm xfce4-terminal xterm"
+
+# Detect which GSettings schema is available
+_detect_schema() {
+    if is_cmd gsettings; then
+        if gsettings list-schemas 2>/dev/null | grep -q "^${_schema_cinnamon}$"; then
+            _schema="$_schema_cinnamon"
+        elif gsettings list-schemas 2>/dev/null | grep -q "^${_schema_gnome}$"; then
+            _schema="$_schema_gnome"
+        fi
+    fi
+}
+
+# Find which of the known terminals are installed on the host system
+_detect_terminals() {
+    _found=""
+    for term in $_known_terminals; do
+        for dir in $(echo "$HOSTPATH" | tr ':' ' '); do
+            if [ -x "$dir/$term" ]; then
+                _found="$_found $term"
+                break
+            fi
+        done
+    done
+    _found=$(echo "$_found" | sed 's/^ //')
+}
+
+# Get the correct exec-arg for a terminal (matches Nemo's eel-gnome-extensions.c)
+_get_exec_arg() {
+    case "$1" in
+        foot|gnome-terminal|kitty|wezterm) echo "--" ;;
+        mate-terminal|sakura|terminator|xfce4-terminal) echo "-x" ;;
+        *) echo "-e" ;;
+    esac
+}
+
+# Save the user's terminal choice via gsettings (primary) or dconf (fallback)
+_save_preference() {
+    _term=$1
+    mkdir -p "$(dirname "$_term_pref_file")"
+    echo "$_term" > "$_term_pref_file"
+
+    _exec_arg=$(_get_exec_arg "$_term")
+    _saved=0
+
+    # Primary: use gsettings (works with any GSettings backend, including keyfile)
+    if [ -n "$_schema" ] && is_cmd gsettings; then
+        if gsettings set "$_schema" exec "$_term" 2>/dev/null &&
+           gsettings set "$_schema" exec-arg "$_exec_arg" 2>/dev/null; then
+            _saved=1
+        fi
+    fi
+
+    # Fallback: use dconf directly
+    if [ "$_saved" -eq 0 ] && is_cmd dconf; then
+        if dconf write "$_dconf_key/exec" "'$_term'" 2>/dev/null &&
+           dconf write "$_dconf_key/exec-arg" "'$_exec_arg'" 2>/dev/null; then
+            _saved=1
+        fi
+    fi
+
+    if [ "$_saved" -eq 0 ]; then
+        notify -dw "Could not save terminal preference to system settings.
+Nemo's 'Open in Terminal' may not work until you configure it manually.
+
+You can set it manually with:
+  gsettings set $_schema_cinnamon exec '$_term'
+  gsettings set $_schema_cinnamon exec-arg '$_exec_arg'"
+        return 1
+    fi
+}
+
+# Check if we already have a saved preference
+_check_saved() {
+    if [ -f "$_term_pref_file" ]; then
+        _saved=$(cat "$_term_pref_file")
+        for dir in $(echo "$HOSTPATH" | tr ':' ' '); do
+            if [ -x "$dir/$_saved" ]; then
+                return 0
+            fi
+        done
+    fi
+    return 1
+}
+
+setup_terminal() {
+    # Skip in CI
+    if [ "$CI" = 'true' ]; then
+        return 0
+    fi
+
+    # If we have a valid saved preference, nothing to do
+    if _check_saved; then
+        return 0
+    fi
+
+    # Detect which GSettings schema is available
+    _detect_schema
+
+    # Detect available terminals
+    _detect_terminals
+
+    if [ -z "$_found" ]; then
+        notify -dw "No supported terminal emulators found on your system.
+Nemo's 'Open in Terminal' feature requires a terminal emulator to be installed.
+Supported terminals: $_known_terminals"
+        return 0
+    fi
+
+    # Count detected terminals (word splitting is intentional here)
+    # shellcheck disable=SC2086
+    set -- $_found
+    _count=$#
+
+    if [ "$_count" -eq 1 ]; then
+        _save_preference "$_found"
+        notify -di "Terminal preference set to: $_found"
+        return 0
+    fi
+
+    # Multiple terminals found — prompt the user to pick one
+    _menu_msg="Which terminal emulator should Nemo use for 'Open in Terminal'?
+
+Detected terminals on your system:
+$(echo "$_found" | sed 's/^/  - /')
+
+Enter the name of your preferred terminal:"
+
+    # Try graphical input first, fall back to terminal
+    _choice=""
+    if is_cmd yad; then
+        _choice=$(yad --entry --title="Nemo Terminal Preference" \
+            --text="$_menu_msg" \
+            --entry-text="$(echo "$_found" | awk '{print $1}')" \
+            2>/dev/null || true)
+    elif is_cmd zenity; then
+        _choice=$(zenity --entry --title="Nemo Terminal Preference" \
+            --text="$_menu_msg" \
+            --entry-text="$(echo "$_found" | awk '{print $1}')" \
+            2>/dev/null || true)
+    elif is_cmd kdialog; then
+        _choice=$(kdialog --inputbox "$_menu_msg" "$(echo "$_found" | awk '{print $1}')" 2>/dev/null || true)
+    fi
+
+    # If no graphical tool worked, try reading from the terminal
+    if [ -z "$_choice" ] && [ -t 0 ]; then
+        printf '%s\n' "$_menu_msg"
+        printf 'Choice [%s]: ' "$(echo "$_found" | awk '{print $1}')"
+        read -r _choice
+    fi
+
+    # Default to first detected terminal if nothing was entered
+    _choice=${_choice:-$(echo "$_found" | awk '{print $1}')}
+
+    # Validate the choice
+    _valid=0
+    for term in $_found; do
+        if [ "$_choice" = "$term" ]; then
+            _valid=1
+            break
+        fi
+    done
+
+    if [ "$_valid" -eq 1 ]; then
+        _save_preference "$_choice"
+        notify -di "Terminal preference set to: $_choice"
+    else
+        notify -dw "Invalid choice: $_choice
+Please enter one of: $_found"
+    fi
+}
+
+setup_terminal || :

@@ -1,0 +1,25 @@
+#!/bin/sh
+
+
+BULKY_PATH="${XDG_BIN_HOME:-$HOST_HOME/.local/bin}/bulky"
+
+_get_bulky() {
+	_link=$(download - "https://api.github.com/repos/pkgforge-dev/Bulky-AppImage/releases/latest" \
+	| sed -e 's/[()",{} ]/\n/g' | grep -oi -m 1 "https://.*/.*-anylinux-$APPIMAGE_ARCH.AppImage$")
+
+	notify -ni "Downloading bulky..."
+	>&2 echo "Downloading bulky from: $_link"
+	mkdir -p "${BULKY_PATH%/*}"
+	download "$BULKY_PATH".tmp "$_link" || return 1
+	[ -s "$BULKY_PATH".tmp ] || return 1
+	mv -f "$BULKY_PATH".tmp "$BULKY_PATH"
+	chmod +x "$BULKY_PATH"
+	
+}
+
+if [ ! -x "$BULKY_PATH" ]; then
+	if ! _get_bulky; then
+		notify -de "Something went wrong getting bulky from '$_link'"
+		return 1
+	fi
+fi
