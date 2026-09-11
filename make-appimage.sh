@@ -8,7 +8,7 @@ export ARCH VERSION
 export OUTPATH=./dist
 export ADD_HOOKS="self-updater.hook"
 export UPINFO="gh-releases-zsync|${GITHUB_REPOSITORY%/*}|${GITHUB_REPOSITORY#*/}|latest|*$ARCH.AppImage.zsync"
-export ICON=/usr/share/icons/hicolor/16x16/apps/nemo.png
+export ICON=/usr/share/icons/hicolor/scalable/apps/nemo.svg
 export DESKTOP=/usr/share/applications/nemo.desktop
 export DEPLOY_PYTHON=1
 #export PATH_MAPPING='
@@ -39,6 +39,9 @@ quick-sharun \
   /usr/lib/nemo/extensions-3.0/  \
   /usr/lib/libcinnamon-desktop.so*  \
   /usr/share/nemo-python/extensions/  
+
+# This extension caused crashes
+rm ./AppDir/shared/lib/nemo/extensions-3.0/libnemo-share.so
 
 
 # Turn AppDir into AppImage
