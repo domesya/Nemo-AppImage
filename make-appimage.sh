@@ -32,7 +32,6 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 # Deploy dependencies
 quick-sharun \
   /usr/bin/nemo  \
-  /usr/bin/bulky \
   /usr/bin/file-roller \
   /usr/lib/libgtk-3.so* \
   /usr/share/glib-2.0/schemas/ \
